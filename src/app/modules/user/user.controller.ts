@@ -1,11 +1,10 @@
-import { Request, Response } from "express";
+import { NextFunction, Request, Response } from "express";
 import { UserServices } from "./user.service";
 import httpStatus from "http-status-codes";
 
-const createUser = async (req: Request, res: Response) => {
+const createUser = async (req: Request, res: Response, next: NextFunction) => {
     try {
         const userData = req.body;
-        console.log(userData);
         const result = await UserServices.createUserIntoDB(userData);
         res.status(httpStatus.CREATED).json({
             success: true,
@@ -13,14 +12,24 @@ const createUser = async (req: Request, res: Response) => {
             data: result,
         });
     } catch (error) {
-           res.status(httpStatus.BAD_REQUEST).json({
-            success: false,
-            message: "Something went wrong",
-            error,
+        next(error);
+    }
+};
+
+const getAllUsers = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+        const result = await UserServices.getAllUsersFromDB();
+        res.status(httpStatus.CREATED).json({
+            success: true,
+            message: "User created successfully",
+            data: result,
         });
+    } catch (error) {
+        next(error);
     }
 };
 
 export const UserControllers = {
     createUser,
+    getAllUsers,
 };
