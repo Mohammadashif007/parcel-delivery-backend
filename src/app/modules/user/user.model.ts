@@ -1,6 +1,6 @@
 import { model, Schema } from "mongoose";
 import { IUser, Role } from "./user.interface";
-import bcrypt, { hash } from "bcrypt";
+import bcrypt from "bcrypt";
 import { envVars } from "../../config/env";
 
 const userSchema = new Schema<IUser>(
