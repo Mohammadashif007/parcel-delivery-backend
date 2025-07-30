@@ -9,7 +9,8 @@ const statusLogSchema = new Schema<IStatusLog>(
             required: true,
         },
         timestamp: { type: Date, default: Date.now },
-        updatedBy: { type: Schema.Types.ObjectId, ref: "User" },
+        // updatedBy: { type: Schema.Types.ObjectId, ref: "User" },
+        updatedBy: { type: String },
         note: { type: String },
     },
     { _id: false }
@@ -24,7 +25,6 @@ const parcelSchema = new Schema<IParcel>({
     parcelStatus: {
         type: String,
         enum: Object.values(ParcelStatus),
-        default: ParcelStatus.PENDING,
     },
     originalAddress: { type: String, required: true },
     destinationAddress: { type: String, required: true },

@@ -4,6 +4,7 @@ import { ParcelServices } from "./parcel.service";
 import { sendResponse } from "../../utils/sendResponse";
 import httpStatus from "http-status-codes";
 
+// ! create parcel
 const createParcel = catchAsync(async (req: Request, res: Response) => {
     const result = await ParcelServices.createParcelIntoDB(req.body);
     sendResponse(res, {
@@ -14,6 +15,7 @@ const createParcel = catchAsync(async (req: Request, res: Response) => {
     });
 });
 
+// ! retrieve all parcel
 const getAllParcel = catchAsync(async (req: Request, res: Response) => {
     const result = await ParcelServices.getMyParcelFromDB();
     sendResponse(res, {
@@ -24,6 +26,7 @@ const getAllParcel = catchAsync(async (req: Request, res: Response) => {
     });
 });
 
+// ! cancel parcel
 const cancelParcel = catchAsync(async (req: Request, res: Response) => {
     const { id } = req.params;
     const result = await ParcelServices.cancelParcelFromDB(id);
@@ -35,8 +38,38 @@ const cancelParcel = catchAsync(async (req: Request, res: Response) => {
     });
 });
 
+// ! show parcel status log
+const statusLog = catchAsync(async (req: Request, res: Response) => {
+    const { id } = req.params;
+    const result = await ParcelServices.getStatusLog(id);
+    sendResponse(res, {
+        success: true,
+        message: "Status log showed successfully",
+        statusCode: httpStatus.OK,
+        data: result,
+    });
+});
+
+// ! parcel dispatch
+const parcelDispatch = catchAsync(async (req: Request, res: Response) => {
+    const { id } = req.params;
+  
+    // const updatedBy = req.user?.email || "ADMIN"; 
+    const updatedBy = "ADMIN"; 
+    const result = await ParcelServices.dispatchParcelFromDB(id, updatedBy);
+    console.log(result);
+    sendResponse(res, {
+        success: true,
+        statusCode: httpStatus.OK,
+        message: "Parcel dispatched successfully",
+        data: result,
+    });
+});
+
 export const ParcelControllers = {
     createParcel,
     getAllParcel,
     cancelParcel,
+    statusLog,
+    parcelDispatch,
 };
