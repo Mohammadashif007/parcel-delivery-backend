@@ -87,10 +87,35 @@ const dispatchParcelFromDB = async (id: string, updatedBy: string) => {
     return parcel;
 };
 
+// ! parcel in transit
+const parcelInTransitFromDB = async (id: string, updatedBy: string) => {
+    const parcel = await Parcel.findById(id);
+    if (!parcel) {
+        throw new AppError(httpStatus.NOT_FOUND, "Parcel not found");
+    }
+    if (parcel.parcelStatus !== ParcelStatus.DISPATCH) {
+        throw new AppError(
+            httpStatus.BAD_REQUEST,
+            "Parcel must be DISPATCHED before marking as IN_TRANSIT"
+        );
+    }
+    parcel.parcelStatus = ParcelStatus.IN_TRANSIT;
+    parcel.statusLog?.push({
+        status: ParcelStatus.IN_TRANSIT,
+        timestamp: new Date(),
+        updatedBy: updatedBy || "ADMIN",
+        note: "Parcel is in transit",
+    });
+
+    await parcel.save();
+    return parcel;
+};
+
 export const ParcelServices = {
     createParcelIntoDB,
     getMyParcelFromDB,
     cancelParcelFromDB,
     getStatusLog,
     dispatchParcelFromDB,
+    parcelInTransitFromDB,
 };

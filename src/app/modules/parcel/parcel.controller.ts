@@ -53,15 +53,28 @@ const statusLog = catchAsync(async (req: Request, res: Response) => {
 // ! parcel dispatch
 const parcelDispatch = catchAsync(async (req: Request, res: Response) => {
     const { id } = req.params;
-  
-    // const updatedBy = req.user?.email || "ADMIN"; 
-    const updatedBy = "ADMIN"; 
+
+    // const updatedBy = req.user?.email || "ADMIN";
+    const updatedBy = "ADMIN";
     const result = await ParcelServices.dispatchParcelFromDB(id, updatedBy);
-    console.log(result);
     sendResponse(res, {
         success: true,
         statusCode: httpStatus.OK,
         message: "Parcel dispatched successfully",
+        data: result,
+    });
+});
+
+// ! parcel in transit
+const parcelInTransit = catchAsync(async (req: Request, res: Response) => {
+    const { id } = req.params;
+    // const updatedBy = req.user?.email || "ADMIN"
+    const updatedBy = "ADMIN";
+    const result = await ParcelServices.parcelInTransitFromDB(id, updatedBy);
+    sendResponse(res, {
+        success: true,
+        statusCode: httpStatus.OK,
+        message: "Parcel marked as IN_TRANSIT successfully",
         data: result,
     });
 });
@@ -72,4 +85,5 @@ export const ParcelControllers = {
     cancelParcel,
     statusLog,
     parcelDispatch,
+    parcelInTransit,
 };
