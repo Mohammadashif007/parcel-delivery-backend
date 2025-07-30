@@ -80,18 +80,32 @@ const parcelInTransit = catchAsync(async (req: Request, res: Response) => {
 });
 
 // ! parcel out for delivery
-const parcelOUtForDelivery = catchAsync(async(req: Request, res: Response) => {
-    const {id} = req.params;
+const parcelOUtForDelivery = catchAsync(async (req: Request, res: Response) => {
+    const { id } = req.params;
     // const updatedBy = req.user?.email || "ADMIN";
-    const updatedBy =  "ADMIN";
+    const updatedBy = "ADMIN";
     const result = await ParcelServices.parcelOUtForDelivery(id, updatedBy);
     sendResponse(res, {
         success: true,
         statusCode: httpStatus.OK,
         message: "Parcel is out for delivery",
-        data: result
-    })
-})
+        data: result,
+    });
+});
+
+// ! parcel delivered
+const parcelDelivered = catchAsync(async (req: Request, res: Response) => {
+    const { id } = req.params;
+    // const updatedBy = req.user?.email || "ADMIN";
+    const updatedBy = "ADMIN";
+    const result = await ParcelServices.parcelDelivered(id, updatedBy);
+    sendResponse(res, {
+        success: true,
+        statusCode: httpStatus.OK,
+        message: "Parcel is delivered",
+        data: result,
+    });
+});
 
 export const ParcelControllers = {
     createParcel,
@@ -100,5 +114,6 @@ export const ParcelControllers = {
     statusLog,
     parcelDispatch,
     parcelInTransit,
-    parcelOUtForDelivery
+    parcelOUtForDelivery,
+    parcelDelivered
 };

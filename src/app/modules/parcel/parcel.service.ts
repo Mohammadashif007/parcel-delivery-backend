@@ -134,6 +134,29 @@ const parcelOUtForDelivery = async (id: string, updatedBy: string) => {
     return parcel;
 };
 
+// ! parcel OUT_FOR_DELIVERY
+const parcelDelivered = async (id: string, updatedBy: string) => {
+    const parcel = await Parcel.findById(id);
+    if (!parcel) {
+        throw new AppError(httpStatus.NOT_FOUND, "Parcel not found");
+    }
+    if (parcel.parcelStatus !== ParcelStatus.OUT_FOR_DELIVERY) {
+        throw new AppError(
+            httpStatus.BAD_REQUEST,
+            "Parcel must be out for delivery before marking as delivered"
+        );
+    }
+    parcel.parcelStatus = ParcelStatus.DELIVERED;
+    parcel.statusLog?.push({
+        status: ParcelStatus.DELIVERED,
+        timestamp: new Date(),
+        updatedBy: updatedBy || "ADMIN",
+        note: "Parcel is delivered",
+    });
+    await parcel.save();
+    return parcel;
+};
+
 export const ParcelServices = {
     createParcelIntoDB,
     getMyParcelFromDB,
@@ -142,4 +165,5 @@ export const ParcelServices = {
     dispatchParcelFromDB,
     parcelInTransitFromDB,
     parcelOUtForDelivery,
+    parcelDelivered,
 };
