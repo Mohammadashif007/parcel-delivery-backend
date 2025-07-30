@@ -111,6 +111,29 @@ const parcelInTransitFromDB = async (id: string, updatedBy: string) => {
     return parcel;
 };
 
+// ! parcel OUT_FOR_DELIVERY
+const parcelOUtForDelivery = async (id: string, updatedBy: string) => {
+    const parcel = await Parcel.findById(id);
+    if (!parcel) {
+        throw new AppError(httpStatus.NOT_FOUND, "Parcel not found");
+    }
+    if (parcel.parcelStatus !== ParcelStatus.IN_TRANSIT) {
+        throw new AppError(
+            httpStatus.BAD_REQUEST,
+            "Parcel must be IN TRANSIT before marking as OUT_FOR_DELIVERY"
+        );
+    }
+    parcel.parcelStatus = ParcelStatus.OUT_FOR_DELIVERY;
+    parcel.statusLog?.push({
+        status: ParcelStatus.OUT_FOR_DELIVERY,
+        timestamp: new Date(),
+        updatedBy: updatedBy || "ADMIN",
+        note: "Parcel is out for delivery",
+    });
+    await parcel.save();
+    return parcel;
+};
+
 export const ParcelServices = {
     createParcelIntoDB,
     getMyParcelFromDB,
@@ -118,4 +141,5 @@ export const ParcelServices = {
     getStatusLog,
     dispatchParcelFromDB,
     parcelInTransitFromDB,
+    parcelOUtForDelivery,
 };

@@ -24,6 +24,9 @@ router.patch("/dispatch/:id", ParcelControllers.parcelDispatch);
 // ! parcel in transit
 router.patch("/in-transit/:id", ParcelControllers.parcelInTransit);
 
+// ! parcel in out for delivery
+router.patch("/out-for-delivery/:id", ParcelControllers.parcelOUtForDelivery);
+
 // ! get parcel status log
 router.get("/:id/status-log", ParcelControllers.statusLog);
 

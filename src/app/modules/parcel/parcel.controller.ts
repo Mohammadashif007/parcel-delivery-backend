@@ -79,6 +79,20 @@ const parcelInTransit = catchAsync(async (req: Request, res: Response) => {
     });
 });
 
+// ! parcel out for delivery
+const parcelOUtForDelivery = catchAsync(async(req: Request, res: Response) => {
+    const {id} = req.params;
+    // const updatedBy = req.user?.email || "ADMIN";
+    const updatedBy =  "ADMIN";
+    const result = await ParcelServices.parcelOUtForDelivery(id, updatedBy);
+    sendResponse(res, {
+        success: true,
+        statusCode: httpStatus.OK,
+        message: "Parcel is out for delivery",
+        data: result
+    })
+})
+
 export const ParcelControllers = {
     createParcel,
     getAllParcel,
@@ -86,4 +100,5 @@ export const ParcelControllers = {
     statusLog,
     parcelDispatch,
     parcelInTransit,
+    parcelOUtForDelivery
 };
