@@ -52,9 +52,9 @@ router.patch(
 
 // ! confirm parcel delivered (receiver)
 router.patch(
-  "/confirm-delivery/:id",
-  checkAuth(Role.RECEIVER),
-  ParcelControllers.confirmDelivery
+    "/confirm-delivery/:id",
+    checkAuth(Role.RECEIVER),
+    ParcelControllers.confirmDelivery
 );
 
 // ! get parcel status log
@@ -73,16 +73,26 @@ router.get(
 
 // ! delivery history for (RECEIVER)
 router.get(
-  "/history",
-  checkAuth(Role.RECEIVER),
-  ParcelControllers.getDeliveryHistory
+    "/history",
+    checkAuth(Role.RECEIVER),
+    ParcelControllers.getDeliveryHistory
 );
 
 // ! get all parcel (ADMIN)
-router.get(
-  "/",
-  checkAuth(Role.ADMIN),
-  ParcelControllers.getAllParcelsByAdmin 
+router.get("/", checkAuth(Role.ADMIN), ParcelControllers.getAllParcelsByAdmin);
+
+// ! block parcel by (ADMIN)
+router.patch(
+    "/block/:parcelId",
+    checkAuth(Role.ADMIN),
+    ParcelControllers.blockParcel
+);
+
+// ! unblock parcel by (ADMIN)
+router.patch(
+    "/unblock/:parcelId",
+    checkAuth(Role.ADMIN),
+    ParcelControllers.unblockParcel
 );
 
 export const ParcelRoutes = router;

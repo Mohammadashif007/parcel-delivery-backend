@@ -7,20 +7,27 @@ import { Role } from "./user.interface";
 
 const router = express.Router();
 
+// ! register user
 router.post(
     "/register",
     validateRequest(createUserZodSchema),
     UserControllers.createUser
 );
+
+// ! get all user by admin
 router.get("/", checkAuth(Role.ADMIN), UserControllers.getAllUsers);
+
+// ! block user by admin
 router.patch(
     "/block/:userId",
     checkAuth(Role.ADMIN),
     UserControllers.blockUser
 );
+
+// ! unblock user by admin
 router.patch(
     "/unblock/:userId",
-     checkAuth(Role.ADMIN),
+    checkAuth(Role.ADMIN),
     UserControllers.unblockUser
 );
 

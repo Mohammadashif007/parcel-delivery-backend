@@ -22,6 +22,7 @@ export interface IParcel {
     weight: string;
     price: number;
     trackingId?: string;
+    isBlocked?: boolean;
     senderId?: Types.ObjectId;
     receiverId: Types.ObjectId;
     parcelStatus?: ParcelStatus;

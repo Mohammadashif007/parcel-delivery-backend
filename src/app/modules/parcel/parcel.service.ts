@@ -29,8 +29,11 @@ const createParcelIntoDB = async (payload: IParcel) => {
 // ! retrieve parcel
 const getMyParcelFromDB = async (senderId: string) => {
     const result = await Parcel.find({ senderId }).populate("receiverId");
-    if(result.length === 0){
-        throw new AppError(httpStatus.BAD_REQUEST, "No parcel found for this sender");
+    if (result.length === 0) {
+        throw new AppError(
+            httpStatus.BAD_REQUEST,
+            "No parcel found for this sender"
+        );
     }
     return result;
 };
@@ -228,10 +231,37 @@ const findDeliveredParcels = async (receiverId: string) => {
 };
 
 // ! get all parcel (ADMIN)
-// Get all parcels (admin only)
 const getAllParcelsByAdminFromDB = async () => {
     const parcels = await Parcel.find().populate("senderId receiverId");
     return parcels;
+};
+
+// ! parcel block by (ADMIN)
+const blockParcelsByAdmin = async (parcelId: string) => {
+    const parcel = await Parcel.findOne({ _id: parcelId });
+    if (!parcel) {
+        throw new AppError(httpStatus.NOT_FOUND, "Parcel not found");
+    }
+    if (parcel.isBlocked) {
+        throw new AppError(httpStatus.CONFLICT, "Parcel already blocked");
+    }
+    parcel.isBlocked = true;
+    await parcel.save();
+    return parcel;
+};
+
+// ! parcel unblock by (ADMIN)
+const unblockParcelsByAdmin = async (parcelId: string) => {
+    const parcel = await Parcel.findOne({ _id: parcelId });
+    if (!parcel) {
+        throw new AppError(httpStatus.NOT_FOUND, "Parcel not found");
+    }
+    if (!parcel.isBlocked) {
+        throw new AppError(httpStatus.CONFLICT, "Parcel already unblocked");
+    }
+    parcel.isBlocked = false;
+    await parcel.save();
+    return parcel;
 };
 
 export const ParcelServices = {
@@ -246,4 +276,6 @@ export const ParcelServices = {
     findIncomingParcels,
     findDeliveredParcels,
     getAllParcelsByAdminFromDB,
+    blockParcelsByAdmin,
+    unblockParcelsByAdmin,
 };

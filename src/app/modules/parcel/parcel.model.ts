@@ -20,6 +20,7 @@ const parcelSchema = new Schema<IParcel>({
     weight: { type: String, required: true },
     price: { type: Number, required: true },
     trackingId: { type: String, unique: true },
+    isBlocked: { type: Boolean, default: false },
     senderId: { type: Schema.Types.ObjectId },
     receiverId: { type: Schema.Types.ObjectId, required: true },
     parcelStatus: {

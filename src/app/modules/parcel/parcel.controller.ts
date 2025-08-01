@@ -148,6 +148,30 @@ const getAllParcelsByAdmin = catchAsync(async (req: Request, res: Response) => {
     });
 });
 
+// ! block parcel by (ADMIN)
+const blockParcel = catchAsync(async (req: Request, res: Response) => {
+    const { parcelId } = req.params;
+    const result = await ParcelServices.blockParcelsByAdmin(parcelId);
+    sendResponse(res, {
+        success: true,
+        statusCode: httpStatus.OK,
+        message: "All parcels retrieved successfully",
+        data: result,
+    });
+});
+
+// ! unblock parcel by (ADMIN)
+const unblockParcel = catchAsync(async (req: Request, res: Response) => {
+    const { parcelId } = req.params;
+    const result = await ParcelServices.unblockParcelsByAdmin(parcelId);
+    sendResponse(res, {
+        success: true,
+        statusCode: httpStatus.OK,
+        message: "All parcels retrieved successfully",
+        data: result,
+    });
+});
+
 export const ParcelControllers = {
     createParcel,
     getAllMyParcel,
@@ -160,4 +184,6 @@ export const ParcelControllers = {
     getIncomingParcels,
     getDeliveryHistory,
     getAllParcelsByAdmin,
+    blockParcel,
+    unblockParcel,
 };
