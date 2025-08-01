@@ -6,7 +6,6 @@ import httpStatus from "http-status-codes";
 
 const userLogin = catchAsync(async (req: Request, res: Response) => {
     const userData = req.body;
-    console.log(userData);
     const result = await AuthServices.userLogin(userData);
     sendResponse(res, {
         success: true,

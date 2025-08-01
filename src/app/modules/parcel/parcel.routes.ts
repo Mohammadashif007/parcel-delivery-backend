@@ -3,34 +3,86 @@ import { ParcelControllers } from "./parcel.controller";
 import { validateRequest } from "../../middlewares/validateRequest";
 import { createParcelZodSchema } from "./parcel.validation";
 
+import { Role } from "../user/user.interface";
+import { checkAuth } from "../../middlewares/checkAuth";
+
 const router = express.Router();
 
 // ! create new parcel
 router.post(
     "/",
+    checkAuth(Role.SENDER),
     validateRequest(createParcelZodSchema),
     ParcelControllers.createParcel
 );
 
 // ! get all parcel
-router.get("/me", ParcelControllers.getAllParcel);
+router.get("/me", checkAuth(Role.SENDER), ParcelControllers.getAllMyParcel);
 
 // ! cancel parcel
-router.patch("/cancel/:id", ParcelControllers.cancelParcel);
+router.patch(
+    "/cancel/:id",
+    checkAuth(Role.ADMIN, Role.SENDER),
+    ParcelControllers.cancelParcel
+);
 
 // ! dispatch parcel
-router.patch("/dispatch/:id", ParcelControllers.parcelDispatch);
+router.patch(
+    "/dispatch/:id",
+    checkAuth(Role.ADMIN),
+    ParcelControllers.parcelDispatch
+);
 
 // ! parcel in transit
-router.patch("/in-transit/:id", ParcelControllers.parcelInTransit);
+router.patch(
+    "/in-transit/:id",
+    checkAuth(Role.ADMIN),
+    ParcelControllers.parcelInTransit
+);
 
 // ! parcel in out for delivery
-router.patch("/out-for-delivery/:id", ParcelControllers.parcelOUtForDelivery);
+router.patch(
+    "/out-for-delivery/:id",
+    checkAuth(Role.ADMIN),
+    ParcelControllers.parcelOUtForDelivery
+);
 
 // ! parcel delivered
-router.patch("/delivered/:id", ParcelControllers.parcelDelivered);
+// router.patch("/delivered/:id", ParcelControllers.parcelDelivered);
+
+// ! confirm parcel delivered (receiver)
+router.patch(
+  "/confirm-delivery/:id",
+  checkAuth(Role.RECEIVER),
+  ParcelControllers.confirmDelivery
+);
 
 // ! get parcel status log
-router.get("/:id/status-log", ParcelControllers.statusLog);
+router.get(
+    "/:id/status-log",
+    checkAuth(Role.ADMIN, Role.SENDER, Role.RECEIVER),
+    ParcelControllers.statusLog
+);
+
+// ! get incoming parcels (RECEIVER)
+router.get(
+    "/incoming",
+    checkAuth(Role.RECEIVER),
+    ParcelControllers.getIncomingParcels
+);
+
+// ! delivery history for (RECEIVER)
+router.get(
+  "/history",
+  checkAuth(Role.RECEIVER),
+  ParcelControllers.getDeliveryHistory
+);
+
+// ! get all parcel (ADMIN)
+router.get(
+  "/",
+  checkAuth(Role.ADMIN),
+  ParcelControllers.getAllParcelsByAdmin 
+);
 
 export const ParcelRoutes = router;

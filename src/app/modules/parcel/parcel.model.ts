@@ -20,8 +20,8 @@ const parcelSchema = new Schema<IParcel>({
     weight: { type: String, required: true },
     price: { type: Number, required: true },
     trackingId: { type: String, unique: true },
-    sender: { type: Schema.Types.ObjectId, required: true },
-    receiver: { type: Schema.Types.ObjectId, required: true },
+    senderId: { type: Schema.Types.ObjectId },
+    receiverId: { type: Schema.Types.ObjectId, required: true },
     parcelStatus: {
         type: String,
         enum: Object.values(ParcelStatus),

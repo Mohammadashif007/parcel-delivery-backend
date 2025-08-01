@@ -3,10 +3,15 @@ import { catchAsync } from "../../utils/catchAsync";
 import { ParcelServices } from "./parcel.service";
 import { sendResponse } from "../../utils/sendResponse";
 import httpStatus from "http-status-codes";
+import { JwtPayload } from "jsonwebtoken";
 
 // ! create parcel
 const createParcel = catchAsync(async (req: Request, res: Response) => {
-    const result = await ParcelServices.createParcelIntoDB(req.body);
+    const senderId = req.user?.userId;
+    const result = await ParcelServices.createParcelIntoDB({
+        ...req.body,
+        senderId,
+    });
     sendResponse(res, {
         success: true,
         message: "Parcel created successfully",
@@ -15,9 +20,10 @@ const createParcel = catchAsync(async (req: Request, res: Response) => {
     });
 });
 
-// ! retrieve all parcel
-const getAllParcel = catchAsync(async (req: Request, res: Response) => {
-    const result = await ParcelServices.getMyParcelFromDB();
+// ! retrieve sender own parcel
+const getAllMyParcel = catchAsync(async (req: Request, res: Response) => {
+    const senderId = req.user?.userId;
+    const result = await ParcelServices.getMyParcelFromDB(senderId);
     sendResponse(res, {
         success: true,
         message: "All parcel retrieve successfully",
@@ -41,7 +47,10 @@ const cancelParcel = catchAsync(async (req: Request, res: Response) => {
 // ! show parcel status log
 const statusLog = catchAsync(async (req: Request, res: Response) => {
     const { id } = req.params;
-    const result = await ParcelServices.getStatusLog(id);
+    const result = await ParcelServices.getStatusLog(
+        id,
+        req.user as JwtPayload
+    );
     sendResponse(res, {
         success: true,
         message: "Status log showed successfully",
@@ -53,10 +62,9 @@ const statusLog = catchAsync(async (req: Request, res: Response) => {
 // ! parcel dispatch
 const parcelDispatch = catchAsync(async (req: Request, res: Response) => {
     const { id } = req.params;
-
-    // const updatedBy = req.user?.email || "ADMIN";
-    const updatedBy = "ADMIN";
+    const updatedBy = req.user?.role;
     const result = await ParcelServices.dispatchParcelFromDB(id, updatedBy);
+
     sendResponse(res, {
         success: true,
         statusCode: httpStatus.OK,
@@ -68,8 +76,7 @@ const parcelDispatch = catchAsync(async (req: Request, res: Response) => {
 // ! parcel in transit
 const parcelInTransit = catchAsync(async (req: Request, res: Response) => {
     const { id } = req.params;
-    // const updatedBy = req.user?.email || "ADMIN"
-    const updatedBy = "ADMIN";
+    const updatedBy = req.user?.role;
     const result = await ParcelServices.parcelInTransitFromDB(id, updatedBy);
     sendResponse(res, {
         success: true,
@@ -84,7 +91,7 @@ const parcelOUtForDelivery = catchAsync(async (req: Request, res: Response) => {
     const { id } = req.params;
     // const updatedBy = req.user?.email || "ADMIN";
     const updatedBy = "ADMIN";
-    const result = await ParcelServices.parcelOUtForDelivery(id, updatedBy);
+    const result = await ParcelServices.parcelOutForDelivery(id, updatedBy);
     sendResponse(res, {
         success: true,
         statusCode: httpStatus.OK,
@@ -93,27 +100,64 @@ const parcelOUtForDelivery = catchAsync(async (req: Request, res: Response) => {
     });
 });
 
-// ! parcel delivered
-const parcelDelivered = catchAsync(async (req: Request, res: Response) => {
+// ! confirm parcel delivered by (receiver)
+const confirmDelivery = catchAsync(async (req: Request, res: Response) => {
+    const receiverId = req.user?.userId;
     const { id } = req.params;
-    // const updatedBy = req.user?.email || "ADMIN";
-    const updatedBy = "ADMIN";
-    const result = await ParcelServices.parcelDelivered(id, updatedBy);
+    const result = await ParcelServices.confirmParcelDelivery(id, receiverId);
     sendResponse(res, {
         success: true,
         statusCode: httpStatus.OK,
-        message: "Parcel is delivered",
+        message: "Parcel marked as delivered",
+        data: result,
+    });
+});
+
+// ! incoming parcel (RECEIVER)
+const getIncomingParcels = catchAsync(async (req: Request, res: Response) => {
+    const receiverId = req.user?.userId;
+    const result = await ParcelServices.findIncomingParcels(receiverId);
+    sendResponse(res, {
+        success: true,
+        statusCode: httpStatus.OK,
+        message: "Incoming parcels retrieved successfully",
+        data: result,
+    });
+});
+
+// ! Delivery history (RECEIVER)
+const getDeliveryHistory = catchAsync(async (req: Request, res: Response) => {
+    const receiverId = req.user?.userId;
+    const result = await ParcelServices.findDeliveredParcels(receiverId);
+    sendResponse(res, {
+        success: true,
+        statusCode: httpStatus.OK,
+        message: "Delivery history retrieve successfully",
+        data: result,
+    });
+});
+
+// ! Get all parcel (ADMIN)
+const getAllParcelsByAdmin = catchAsync(async (req: Request, res: Response) => {
+    const result = await ParcelServices.getAllParcelsByAdminFromDB();
+    sendResponse(res, {
+        success: true,
+        statusCode: httpStatus.OK,
+        message: "All parcels retrieved successfully",
         data: result,
     });
 });
 
 export const ParcelControllers = {
     createParcel,
-    getAllParcel,
+    getAllMyParcel,
     cancelParcel,
     statusLog,
     parcelDispatch,
     parcelInTransit,
     parcelOUtForDelivery,
-    parcelDelivered
+    confirmDelivery,
+    getIncomingParcels,
+    getDeliveryHistory,
+    getAllParcelsByAdmin,
 };
