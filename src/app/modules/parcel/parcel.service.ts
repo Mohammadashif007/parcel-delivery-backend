@@ -3,6 +3,8 @@ import { IParcel, ParcelStatus } from "./parcel.interface";
 import { Parcel } from "./parcel.model";
 import AppError from "../../errorHelpers/AppError";
 import httpStatus from "http-status-codes";
+import { JwtPayload } from "jsonwebtoken";
+import { Role } from "../user/user.interface";
 
 // ! create parcel
 const createParcelIntoDB = async (payload: IParcel) => {
@@ -25,8 +27,14 @@ const createParcelIntoDB = async (payload: IParcel) => {
 };
 
 // ! retrieve parcel
-const getMyParcelFromDB = async () => {
-    const result = await Parcel.find();
+const getMyParcelFromDB = async (senderId: string) => {
+    const result = await Parcel.find({ senderId }).populate("receiverId");
+    if (result.length === 0) {
+        throw new AppError(
+            httpStatus.BAD_REQUEST,
+            "No parcel found for this sender"
+        );
+    }
     return result;
 };
 
@@ -54,11 +62,24 @@ const cancelParcelFromDB = async (id: string) => {
 };
 
 // ! show status log
-const getStatusLog = async (id: string) => {
+const getStatusLog = async (id: string, user: JwtPayload) => {
     const parcel = await Parcel.findById(id).select("statusLog");
     if (!parcel) {
         throw new AppError(httpStatus.NOT_FOUND, "Parcel not found");
     }
+
+    const userId = user.userId;
+    const userRole = user.role;
+    const isSender = parcel.senderId?.toString() === userId;
+    const isReceiver = parcel.receiverId?.toString() === userId;
+    const isAdmin = userRole === Role.ADMIN;
+    if (!isSender && isReceiver && isAdmin) {
+        throw new AppError(
+            httpStatus.UNAUTHORIZED,
+            "You are not authorized to view this status log"
+        );
+    }
+
     return parcel;
 };
 
@@ -93,12 +114,23 @@ const parcelInTransitFromDB = async (id: string, updatedBy: string) => {
     if (!parcel) {
         throw new AppError(httpStatus.NOT_FOUND, "Parcel not found");
     }
+
+    //! If already IN_TRANSIT, return early
+    if (parcel.parcelStatus === ParcelStatus.IN_TRANSIT) {
+        throw new AppError(
+            httpStatus.BAD_REQUEST,
+            "This parcel is already marked as IN_TRANSIT"
+        );
+    }
+
+    //! If not DISPATCH,
     if (parcel.parcelStatus !== ParcelStatus.DISPATCH) {
         throw new AppError(
             httpStatus.BAD_REQUEST,
             "Parcel must be DISPATCHED before marking as IN_TRANSIT"
         );
     }
+
     parcel.parcelStatus = ParcelStatus.IN_TRANSIT;
     parcel.statusLog?.push({
         status: ParcelStatus.IN_TRANSIT,
@@ -112,17 +144,28 @@ const parcelInTransitFromDB = async (id: string, updatedBy: string) => {
 };
 
 // ! parcel OUT_FOR_DELIVERY
-const parcelOUtForDelivery = async (id: string, updatedBy: string) => {
+const parcelOutForDelivery = async (id: string, updatedBy: string) => {
     const parcel = await Parcel.findById(id);
     if (!parcel) {
         throw new AppError(httpStatus.NOT_FOUND, "Parcel not found");
     }
+
+    //! Prevent duplicate status update
+    if (parcel.parcelStatus === ParcelStatus.OUT_FOR_DELIVERY) {
+        throw new AppError(
+            httpStatus.BAD_REQUEST,
+            "Parcel is already marked as OUT_FOR_DELIVERY"
+        );
+    }
+
+    //! Ensure valid state transition
     if (parcel.parcelStatus !== ParcelStatus.IN_TRANSIT) {
         throw new AppError(
             httpStatus.BAD_REQUEST,
             "Parcel must be IN TRANSIT before marking as OUT_FOR_DELIVERY"
         );
     }
+
     parcel.parcelStatus = ParcelStatus.OUT_FOR_DELIVERY;
     parcel.statusLog?.push({
         status: ParcelStatus.OUT_FOR_DELIVERY,
@@ -134,25 +177,89 @@ const parcelOUtForDelivery = async (id: string, updatedBy: string) => {
     return parcel;
 };
 
-// ! parcel OUT_FOR_DELIVERY
-const parcelDelivered = async (id: string, updatedBy: string) => {
+//! confirm delivered by (receiver)
+const confirmParcelDelivery = async (id: string, receiverId: string) => {
     const parcel = await Parcel.findById(id);
+
     if (!parcel) {
         throw new AppError(httpStatus.NOT_FOUND, "Parcel not found");
     }
+
+    if (parcel.receiverId.toString() !== receiverId) {
+        throw new AppError(httpStatus.FORBIDDEN, "You are not the receiver");
+    }
+
     if (parcel.parcelStatus !== ParcelStatus.OUT_FOR_DELIVERY) {
         throw new AppError(
             httpStatus.BAD_REQUEST,
-            "Parcel must be out for delivery before marking as delivered"
+            "Parcel must be OUT_FOR_DELIVERY to confirm"
         );
     }
+
     parcel.parcelStatus = ParcelStatus.DELIVERED;
     parcel.statusLog?.push({
         status: ParcelStatus.DELIVERED,
         timestamp: new Date(),
-        updatedBy: updatedBy || "ADMIN",
-        note: "Parcel is delivered",
+        updatedBy: receiverId,
+        note: "Parcel received by receiver",
     });
+
+    await parcel.save();
+    return parcel;
+};
+
+// ! check incoming parcel (RECEIVER)
+const findIncomingParcels = async (receiverId: string) => {
+    const parcel = await Parcel.find({
+        receiverId,
+        parcelStatus: { $ne: ParcelStatus.DELIVERED },
+    });
+
+    if (parcel.length === 0) {
+        throw new AppError(httpStatus.NOT_FOUND, "No incoming parcel exist");
+    }
+
+    return parcel;
+};
+
+// ! delivery history
+const findDeliveredParcels = async (receiverId: string) => {
+    return await Parcel.find({
+        receiverId,
+        parcelStatus: ParcelStatus.DELIVERED,
+    });
+};
+
+// ! get all parcel (ADMIN)
+const getAllParcelsByAdminFromDB = async () => {
+    const parcels = await Parcel.find().populate("senderId receiverId");
+    return parcels;
+};
+
+// ! parcel block by (ADMIN)
+const blockParcelsByAdmin = async (parcelId: string) => {
+    const parcel = await Parcel.findOne({ _id: parcelId });
+    if (!parcel) {
+        throw new AppError(httpStatus.NOT_FOUND, "Parcel not found");
+    }
+    if (parcel.isBlocked) {
+        throw new AppError(httpStatus.CONFLICT, "Parcel already blocked");
+    }
+    parcel.isBlocked = true;
+    await parcel.save();
+    return parcel;
+};
+
+// ! parcel unblock by (ADMIN)
+const unblockParcelsByAdmin = async (parcelId: string) => {
+    const parcel = await Parcel.findOne({ _id: parcelId });
+    if (!parcel) {
+        throw new AppError(httpStatus.NOT_FOUND, "Parcel not found");
+    }
+    if (!parcel.isBlocked) {
+        throw new AppError(httpStatus.CONFLICT, "Parcel already unblocked");
+    }
+    parcel.isBlocked = false;
     await parcel.save();
     return parcel;
 };
@@ -164,6 +271,11 @@ export const ParcelServices = {
     getStatusLog,
     dispatchParcelFromDB,
     parcelInTransitFromDB,
-    parcelOUtForDelivery,
-    parcelDelivered,
+    parcelOutForDelivery,
+    confirmParcelDelivery,
+    findIncomingParcels,
+    findDeliveredParcels,
+    getAllParcelsByAdminFromDB,
+    blockParcelsByAdmin,
+    unblockParcelsByAdmin,
 };

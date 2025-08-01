@@ -8,7 +8,7 @@ const userSchema = new Schema<IUser>(
         name: { type: String, required: true },
         email: { type: String, required: true, unique: true },
         password: { type: String, required: true },
-        role: { type: String, enum: Object.values(Role) },
+        role: { type: String, enum: Object.values(Role), default: Role.SENDER },
         address: { type: String },
         phone: { type: String },
         isBlocked: { type: Boolean, default: false },

@@ -14,6 +14,8 @@ export const createUserZodSchema = z.object({
         .string({ error: "Password must be a string" })
         .min(6, { message: "Password must be at least 6 characters" }),
 
+    role: z.enum(["SENDER", "RECEIVER", "ADMIN"]).optional(),
+
     phone: z
         .string({ error: "Phone Number must be string" })
         .regex(/^(?:\+8801\d{9}|01\d{9})$/, {
@@ -23,7 +25,6 @@ export const createUserZodSchema = z.object({
 
     address: z.string({ error: "Address must be a string" }).optional(),
 });
-
 
 // ! update user zod validation schema
 export const updateUserZodSchema = z.object({
