@@ -29,9 +29,9 @@ const createParcelIntoDB = async (payload: IParcel) => {
 // ! retrieve parcel
 const getMyParcelFromDB = async (senderId: string) => {
     const result = await Parcel.find({ senderId }).populate("receiverId");
-    // if(result.length === 0){
-    //     throw new AppError(httpStatus.BAD_REQUEST, "No parcel found for this sender");
-    // }
+    if(result.length === 0){
+        throw new AppError(httpStatus.BAD_REQUEST, "No parcel found for this sender");
+    }
     return result;
 };
 
