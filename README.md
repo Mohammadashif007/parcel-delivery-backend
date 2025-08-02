@@ -30,17 +30,21 @@ A parcel delivery management backend project built with **Node.js**, **Express**
 
 ### 1. Clone the Repo
 
-````bash
+````
 git clone https://github.com/Mohammadashif007/fullStack-backend
 cd fullStack-backend
+```
 
 2. Install Dependencies
-```bash
+
+```
 npm install
+```
 
 3. Environment Variables
 Create a .env file in the root:
-```bash
+
+```
 PORT=5000
 DB_URL=mongodb+srv://your_database_url
 
@@ -50,12 +54,13 @@ BCRYPT_SALT_ROUND=give_any_digit
 #! JWT
 JWT_ACCESS_SECRET=jwt_secret
 JWT_ACCESS_EXPIRES=5d
+```
 
 4. Run in Development Mode
 
-```bash
+```
 npm run start:dev
-
+```
 
 ☑ API Endpoints
 
@@ -100,10 +105,9 @@ PATCH /api/parcels/confirm-delivery/:id (Receiver)
 
 PATCH /api/parcels/:id/status-log (Admin/Sender/Receiver)
 
-````
-
 
 ## 📦 Parcel Status Flow
 
 ```
 CREATED → DISPATCHED → IN_TRANSIT → OUT_FOR_DELIVERY → DELIVERED
+```
