@@ -13,8 +13,6 @@ const createParcelIntoDB = async (payload: IParcel) => {
     const { weight } = payload;
     const weightNum = parseFloat(weight);
     const totalPrice = weightNum * 200;
-    console.log(totalPrice);
-
     const result = await Parcel.create({
         ...payload,
         price: totalPrice,
@@ -34,7 +32,7 @@ const createParcelIntoDB = async (payload: IParcel) => {
 
 // ! retrieve parcel
 const getMyParcelFromDB = async (senderId: string) => {
-    const result = await Parcel.find({ senderId }).populate("receiverId");
+    const result = await Parcel.find({ senderId });
     if (result.length === 0) {
         throw new AppError(
             httpStatus.BAD_REQUEST,
