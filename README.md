@@ -30,7 +30,7 @@ A parcel delivery management backend project built with **Node.js**, **Express**
 
 ### 1. Clone the Repo
 
-````
+```
 git clone https://github.com/Mohammadashif007/fullStack-backend
 cd fullStack-backend
 ```
