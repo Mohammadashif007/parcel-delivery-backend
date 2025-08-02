@@ -10,8 +10,14 @@ import { Role } from "../user/user.interface";
 const createParcelIntoDB = async (payload: IParcel) => {
     const trackingId = `TRK-${v4().split("-")[0].toUpperCase()}`;
 
+    const { weight } = payload;
+    const weightNum = parseFloat(weight);
+    const totalPrice = weightNum * 200;
+    console.log(totalPrice);
+
     const result = await Parcel.create({
         ...payload,
+        price: totalPrice,
         trackingId,
         parcelStatus: ParcelStatus.PENDING,
         statusLog: [
@@ -264,6 +270,20 @@ const unblockParcelsByAdmin = async (parcelId: string) => {
     return parcel;
 };
 
+// ! track parcel by trackingId
+const trackParcel = async (trackingId: string) => {
+    const parcel = await Parcel.findOne({ trackingId }).populate(
+        "senderId receiverId"
+    );
+    if (!parcel) {
+        throw new AppError(
+            httpStatus.NOT_FOUND,
+            "Parcel not found for this tracking id"
+        );
+    }
+    return parcel;
+};
+
 export const ParcelServices = {
     createParcelIntoDB,
     getMyParcelFromDB,
@@ -278,4 +298,5 @@ export const ParcelServices = {
     getAllParcelsByAdminFromDB,
     blockParcelsByAdmin,
     unblockParcelsByAdmin,
+    trackParcel,
 };

@@ -95,4 +95,11 @@ router.patch(
     ParcelControllers.unblockParcel
 );
 
+// ! track parcel by trackingId
+router.get(
+    "/track/:trackingId",
+    checkAuth(Role.SENDER, Role.RECEIVER, Role.ADMIN),
+    ParcelControllers.trackParcel
+);
+
 export const ParcelRoutes = router;

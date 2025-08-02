@@ -172,6 +172,18 @@ const unblockParcel = catchAsync(async (req: Request, res: Response) => {
     });
 });
 
+//! track parcel by trackingId
+const trackParcel = catchAsync(async (req: Request, res: Response) => {
+    const { trackingId } = req.params;
+    const result = await ParcelServices.trackParcel(trackingId);
+    sendResponse(res, {
+        success: true,
+        statusCode: httpStatus.OK,
+        message: "Parcel tracking info retrieve successfully",
+        data: result,
+    });
+});
+
 export const ParcelControllers = {
     createParcel,
     getAllMyParcel,
@@ -186,4 +198,5 @@ export const ParcelControllers = {
     getAllParcelsByAdmin,
     blockParcel,
     unblockParcel,
+    trackParcel
 };
