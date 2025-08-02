@@ -64,46 +64,80 @@ npm run start:dev
 
 ☑ API Endpoints
 
-Auth
+🎭 Auth
 
-POST /api/v1/auth/login
+**POST** /api/v1/auth/login
 
-User
+👤 User
 
-GET /api/v1/user/register (Public)
+- **GET** /api/v1/user/register (Public)
+    
+    - Register user
 
-PATCH /api/v1/user/block/:userId (Admin)
+- **PATCH** /api/v1/user/block/:userId (Admin)
+    
+    - Block user by admin
 
-PATCH /api/v1/user/unblock/:userId (Admin)
+- **PATCH** /api/v1/user/unblock/:userId (Admin)
+    
+    - Unblock user
 
+## 📦 Parcel
 
-Parcel
+### Sender
 
-POST /api/v1/parcels (Sender)
+- **POST** /api/v1/parcels (Sender)
+  
+    - Create a new parcel
+      
+- **GET** /api/parcels/me (Sender)
 
-GET /api/parcels/me (Sender)
+    - Retrieve parcels created by the sender
 
-PATCH /api/parcels/cancel/:id (Sender/Admin)
+- **PATCH** /api/parcels/cancel/:id (Sender/Admin)
+    
+    - Cancel a parcel before it is dispatched
 
-GET /api/parcels/incoming (Receiver)
+### Receiver
 
-PATCH /api/parcels/dispatch/:id (Admin)
+- **GET** /api/parcels/incoming (Receiver)
 
-PATCH /api/parcels/out-for-delivery/:id (Admin)
+     - List incoming parcels not yet delivered
 
-PATCH /api/parcels/out-for-delivery/:id (Admin)
+- **PATCH** /api/parcels/confirm-delivery/:id (Receiver)
 
-PATCH /api/parcels/confirm-delivery/:id (Receiver)
+    - Confirm parcel delivery
 
-PATCH /api/parcels/block/:parcelId (Admin)
+- **PATCH** /api/parcels/history (Receiver)
 
-PATCH /api/parcels/unblock/:parcelId (Admin)
+    - View delivery history (delivered parcels)
 
-PATCH /api/parcels/track/:trackingId (Admin/Sender/Receiver)
+- **PATCH** /api/parcels/:id/status-log (Admin/Sender/Receiver)
+  
+    - View status log
+      
+### Admin
 
-PATCH /api/parcels/confirm-delivery/:id (Receiver)
+- **PATCH** /api/parcels/dispatch/:id (Admin)
 
-PATCH /api/parcels/:id/status-log (Admin/Sender/Receiver)
+    - Mark parcel as dispatched
+
+- **PATCH** /api/parcels/out-for-delivery/:id (Admin)
+    
+    - Mark parcel as out for delivery
+
+- **PATCH** /api/parcels/block/:parcelId (Admin)
+    
+    - Block a parcel
+
+- **PATCH** /api/parcels/unblock/:parcelId (Admin)
+  
+    - Unblock a parcel
+
+- **PATCH** /api/parcels/track/:trackingId (Admin/Sender/Receiver)
+    
+    - Track parcel using tracking ID
+
 
 
 ## 📦 Parcel Status Flow
