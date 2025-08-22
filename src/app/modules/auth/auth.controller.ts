@@ -7,9 +7,15 @@ import httpStatus from "http-status-codes";
 const userLogin = catchAsync(async (req: Request, res: Response) => {
     const userData = req.body;
     const result = await AuthServices.userLogin(userData);
+
+    res.cookie("accessToken", result.accessToken, {
+        httpOnly: true,
+        secure: true,
+    });
+    
     sendResponse(res, {
         success: true,
-        message: "User login successfully",
+        message: "User logged in successfully",
         statusCode: httpStatus.ACCEPTED,
         data: result,
     });

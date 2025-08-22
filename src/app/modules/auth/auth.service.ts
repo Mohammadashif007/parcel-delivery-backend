@@ -6,6 +6,7 @@ import { IUser } from "../user/user.interface";
 import { envVars } from "../../config/env";
 import { generateToken } from "../../utils/jwt";
 
+
 const userLogin = async (payload: Partial<IUser>) => {
     const userExist = await User.findOne({ email: payload.email });
 
@@ -32,6 +33,7 @@ const userLogin = async (payload: Partial<IUser>) => {
         envVars.JWT_ACCESS_EXPIRES
     );
   
+
 
     return {
         email: userExist.email,
